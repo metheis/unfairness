@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+
+"""
+Usage:
+./test_bbr.py <NUM_LOGS>
+"""
+
+import subprocess, threading, time, sys, os
+
+# Global Parameters
+MAHIMAHI_BASE = '100.64.0.1'
+LOG_DIR_BASE='logs-'
+CCA = 'bbr'
+RUN_TIMELENGTH = 60
+LONG_FLOW_LATENCY = 120
+SHORT_FLOW_LATENCY = 20
+UPLOAD_FILE = 'const-120mbit'
+DOWNLOAD_FILE = 'const-120mbit'
+IPERF_HEADER_LINE_NUM = 6
+IPERF_STARTUP_REJECT = 20
+
+def thread_call(command, filename, summary_flows, index):
+    with open(filename, 'w') as outfile:
+        subprocess.run(command, stdout=outfile, stderr=outfile)
+    with open(filename, 'r') as infile:
+        lines = infile.readlines()
+        lines = lines[IPERF_HEADER_LINE_NUM + IPERF_STARTUP_REJECT:]
+        total_mbits = 0
+        total_lines = 0
+        for line in lines:
+            splitline = line.split()
+            unit = splitline[-1]
+            value = splitline[-2]
+            if unit == 'Mbits/sec':
+                total_mbits += float(value)
+            elif unit == 'Kbits/sec':
+                total_mbits += float(value) / 1000
+            elif unit == 'Gbits/sec':
+                total_mbits += float(value) * 1000
+            else:
+                print('Error: unsupported unit:')
+            total_lines += 1
+        average_mbits = total_mbits / total_lines
+        summary_flows[index] = average_mbits
+
+def spawn_flow(delay, latency, log_dir, num, summary_flows, orig = False):
+    if orig:
+        command = ['mm-delay', str(latency), 'mm-link', UPLOAD_FILE, DOWNLOAD_FILE, '--', \
+        'iperf', '-c', MAHIMAHI_BASE, '--linux-congestion', CCA, '-i', '1', '-t', str(RUN_TIMELENGTH)]
+    else:
+        command = ['mm-delay', str(latency), 'iperf', '-c', MAHIMAHI_BASE, '--linux-congestion', CCA, \
+              '-i', '1', '-t', str(RUN_TIMELENGTH)]
+    t = threading.Timer(0, thread_call, kwargs={'command':command, 'filename':log_dir + str(num), \
+        'summary_flows':summary_flows, 'index':num})
+    t.start()
+
+def main():
+    num_logs = int(sys.argv[1])
+    log_dir = LOG_DIR_BASE + sys.argv[1]
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    summary_flows = {}
+    
+    # create initial long flow
+    spawn_flow(0.2*num_logs, LONG_FLOW_LATENCY, log_dir + '/long-flow-', 0, summary_flows, True)
+    time.sleep(0.2)
+
+    #create additional flows
+    for i in range(num_logs):
+        spawn_flow(0.2*num_logs - 0.2*i, SHORT_FLOW_LATENCY, log_dir + '/short-flow-', i + 1, summary_flows)
+        time.sleep(0.2)
+
+    # Wait until flows are done:
+    time.sleep(RUN_TIMELENGTH + 1)
+
+    # Print summary:
+    long_avg = summary_flows[0]
+    del summary_flows[0]
+    short_avg = sum(summary_flows.values())/len(summary_flows)
+    print('Long: ' + str(round(long_avg, 3)) + ', Short: ' + str(round(short_avg, 3)) + ', Ratio: ' + str(round(long_avg/short_avg, 4)))
+
+    # Save summary:
+    with open(log_dir + '/summary-' + str(num_logs), 'w') as summaryfile:
+        summaryfile.write(str(num_logs + 1) + ' Flow Summary\n')
+        summaryfile.write('Long:  ' + str(round(long_avg, 3)) + '\n')
+        summaryfile.write('Short: ' + str(round(short_avg, 3)) + '\n')
+        summaryfile.write('Ratio: ' + str(round(long_avg/short_avg, 4)) + '\n')
+
+
+if __name__ == '__main__':
+    args = sys.argv
+    if len(args) != 2:
+        print('Usage: ./test_bbr.py <NUM_LOGS>')
+    else:
+        main()

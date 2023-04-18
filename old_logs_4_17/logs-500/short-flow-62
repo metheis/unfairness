@@ -1,0 +1,20 @@
+------------------------------------------------------------
+Client connecting to 100.64.0.1, TCP port 5001
+TCP window size:  128 KByte (default)
+------------------------------------------------------------
+[  3] local 100.64.0.125 port 50334 connected with 100.64.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0- 1.0 sec   488 KBytes  4.00 Mbits/sec
+[  3]  1.0- 2.0 sec   836 KBytes  6.85 Mbits/sec
+[  3]  2.0- 3.0 sec  2.17 MBytes  18.2 Mbits/sec
+[  3]  3.0- 4.0 sec  3.37 MBytes  28.3 Mbits/sec
+[  3]  4.0- 5.0 sec  4.12 MBytes  34.6 Mbits/sec
+[  3]  5.0- 6.0 sec  4.04 MBytes  33.9 Mbits/sec
+[  3]  6.0- 7.0 sec  3.11 MBytes  26.1 Mbits/sec
+[  3]  7.0- 8.0 sec  2.17 MBytes  18.2 Mbits/sec
+[  3]  8.0- 9.0 sec  3.23 MBytes  27.1 Mbits/sec
+[  3]  9.0-10.0 sec  2.80 MBytes  23.5 Mbits/sec
+[  3] 10.0-11.0 sec   896 KBytes  7.34 Mbits/sec
+[  3] 11.0-12.0 sec  1.86 MBytes  15.6 Mbits/sec
+[  3] 12.0-13.0 sec  1.62 MBytes  13.6 Mbits/sec
+[  3] 13.0-14.0 sec   827 KBytes  6.78 Mbits/sec
