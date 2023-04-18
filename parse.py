@@ -2,7 +2,7 @@
 
 """
 Usage:
-./parse.py <NUM_LOGS>
+./parse.py <NUM_LOGS> <CCA>
 """
 
 import threading, time, sys, os
@@ -59,7 +59,8 @@ def jains_fairness_index(bandwidths):
 
 def main(args):
     num_logs = int(args[1])
-    log_dir = LOG_DIR_BASE + args[1]
+    cca = args[2]
+    log_dir = cca + '/' + LOG_DIR_BASE + args[1]
     if not os.path.exists(log_dir):
         print("Those logs don't exist")
     else:
@@ -92,7 +93,7 @@ def main(args):
 
 if __name__ == '__main__':
     args = sys.argv
-    if len(args) != 2:
-        print('Usage: ./parse.py <NUM_LOGS>')
+    if len(args) != 3:
+        print('Usage: ./parse.py <NUM_LOGS> <CCA>')
     else:
         main(args)
