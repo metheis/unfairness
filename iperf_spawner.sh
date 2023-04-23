@@ -1,16 +1,21 @@
 #!/bin/bash
-# mm-delay 80 mm-link const-480mbit const-120mbit -- bash bbr.sh 5 40 60
+# mm-delay 80 mm-link const-480mbit const-120mbit -- bash bbr.sh 5 40 60 cubic num_flows 
 
-if [ "$#" -ne 4 ]; then
-    echo "Usage: $0 <number_of_logs> <short_lat> <timelength> <cca>"
+if [ "$#" -ne 5 ]; then
+    echo "Usage: $0 <number_of_logs> <short_lat> <timelength> <cca> <exp_type>"
     exit 1
 fi
 
 num_logs=$1
 short_lat=$2
 cca=$4
+exp_type=$5
 MAHIMAHI_BASE=100.64.0.1
-log_directory=/home/mark/unfairness/$cca/logs-$1
+if [ "$exp_type" = "num_flows" ]; then
+    log_directory=/home/mark/unfairness/$exp_type/$cca/logs-$num_logs
+else
+    log_directory=/home/mark/unfairness/$exp_type/$cca/logs-$short_lat
+fi
 timelength=$3
 
 # sudo tcpdump -i ingress --snapshot-length 100 -w /home/mark/mahimahi_exp/pktslog &
